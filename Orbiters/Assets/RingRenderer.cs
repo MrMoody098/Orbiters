@@ -7,6 +7,13 @@ public class RingRenderer : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private OrbitalWeapon3D orbitalWeapon;
 
+    // Public method to initialize references (called after instantiation)
+    public void Initialize(Transform playerTransform, OrbitalWeapon3D weapon)
+    {
+        player = playerTransform;
+        orbitalWeapon = weapon;
+    }
+
     [Header("Ring Settings")]
     [SerializeField] private int segments = 64;
     [SerializeField] private float baseLineWidth = 0.05f;
@@ -22,7 +29,7 @@ public class RingRenderer : MonoBehaviour
         line = GetComponent<LineRenderer>();
         line.positionCount = segments;
         line.loop = true;
-        line.useWorldSpace = false;
+        line.useWorldSpace = true; // Use world space so we can center on player
         line.startWidth = baseLineWidth;
         line.endWidth = baseLineWidth;
 
@@ -46,13 +53,19 @@ public class RingRenderer : MonoBehaviour
 
     private void DrawRing(float radius)
     {
+        if (player == null) return;
+
+        // Get the player's position as the center of the ring
+        Vector3 center = player.position;
+        
         float angleStep = 2f * Mathf.PI / segments;
 
         for (int i = 0; i < segments; i++)
         {
             float angle = i * angleStep;
 
-            Vector3 point = new Vector3(
+            // Calculate point in world space, centered on the player
+            Vector3 point = center + new Vector3(
                 Mathf.Cos(angle) * radius,
                 Mathf.Sin(angle) * radius,
                 0f

@@ -68,6 +68,20 @@ public class PlayerController : MonoBehaviour
         orbitalWeapon.increaseRadius = incRadius;
         orbitalWeapon.flipDirection = flipDir;
 
+        // Find and configure RingRenderer component (might be on a child GameObject)
+        RingRenderer ringRenderer = orb.GetComponentInChildren<RingRenderer>();
+        if (ringRenderer == null)
+        {
+            // Try to find it on the root object
+            ringRenderer = orb.GetComponent<RingRenderer>();
+        }
+
+        // Initialize the RingRenderer with the necessary references
+        if (ringRenderer != null)
+        {
+            ringRenderer.Initialize(this.transform, orbitalWeapon);
+        }
+
         health = maxHealth;
     }
 

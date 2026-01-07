@@ -1,0 +1,120 @@
+# Unity Essential Files Only
+# This .gitignore ensures only essential Unity project files are tracked
+
+# ============================================
+# UNITY GENERATED FOLDERS (NEVER TRACK)
+# ============================================
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+.vs/
+.consulo/
+ExportedObj/
+.gradle/
+GeneratedAssets_deleted/
+
+# ============================================
+# AUTO-GENERATED SOLUTION/PROJECT FILES
+# ============================================
+*.sln
+*.slnx
+*.csproj
+*.unityproj
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.tmp
+*.bak
+*.orig
+
+# ============================================
+# UNITY SPECIFIC FILES
+# ============================================
+sysinfo.txt
+mono_crash.*
+crashlytics-build.properties
+*.log
+
+# ============================================
+# BUILD ARTIFACTS
+# ============================================
+*.apk
+*.aab
+*.app
+*.unitypackage
+*.unitypackage.meta
+
+# ============================================
+# OS FILES
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# IDE FILES
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================
+# BLENDER FILES
+# ============================================
+*.blend1
+*.blend1.meta
+
+# ============================================
+# MEMORY CAPTURES & RECORDINGS
+# ============================================
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# ============================================
+# TEST FILES
+# ============================================
+InitTestScene*.unity*
+Assets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# ============================================
+# ADDRESSABLES (if not using)
+# ============================================
+/ServerData
+/[Aa]ssets/StreamingAssets/aa*
+/[Aa]ssets/AddressableAssetsData/link.xml*
+/[Aa]ssets/Addressables_Temp*
+/[Aa]ssets/AddressableAssetsData/*/*.bin*
+
+# ============================================
+# VISUAL SCRIPTING GENERATED
+# ============================================
+/[Aa]ssets/Unity.VisualScripting.Generated/
+
+# ============================================
+# JETBRAINS RIDER
+# ============================================
+/[Aa]ssets/Plugins/Editor/JetBrains*
+*.DotSettings.user
+
+# ============================================
+# ASSET STORE TOOLS (optional - uncomment if needed)
+# ============================================
+# /[Aa]ssets/AssetStoreTools*
