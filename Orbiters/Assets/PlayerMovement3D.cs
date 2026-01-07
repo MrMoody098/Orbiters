@@ -145,7 +145,35 @@ public class PlayerMovement3D : MonoBehaviour
             y = GetKeyboardInput(false); // Vertical
         }
 
-        Vector3 velocity = new Vector3(x, y, 0f).normalized * moveSpeed;
-        rb.linearVelocity = velocity;
+        Vector3 desiredVelocity = new Vector3(x, y, 0f).normalized * moveSpeed;
+        
+        // Check if player is being knocked back (high velocity from impact)
+        float currentSpeed = rb.linearVelocity.magnitude;
+        bool isKnockedBack = currentSpeed > moveSpeed * 1.2f;
+        
+        // Check if player is moving away from desired direction (likely bouncing off wall)
+        bool isBouncing = false;
+        if (currentSpeed > 0.5f && desiredVelocity.magnitude > 0.01f)
+        {
+            float dot = Vector3.Dot(rb.linearVelocity.normalized, desiredVelocity.normalized);
+            isBouncing = dot < -0.3f; // Moving opposite to desired direction
+        }
+        
+        if (isKnockedBack || isBouncing)
+        {
+            // Being knocked back or bouncing - let physics handle it
+            // Don't override velocity, just add slight movement influence
+            // The drag will naturally slow down the knockback/bounce
+            if (desiredVelocity.magnitude > 0.01f)
+            {
+                // Add slight movement influence while sliding/bouncing
+                rb.AddForce(desiredVelocity * 2f, ForceMode.Force);
+            }
+        }
+        else
+        {
+            // Normal movement - set velocity directly for responsive controls
+            rb.linearVelocity = desiredVelocity;
+        }
     }
 }

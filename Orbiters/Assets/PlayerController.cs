@@ -4,7 +4,9 @@ public class PlayerController : MonoBehaviour
 {
     public PlayerMovement3D movement;
     public OrbitalWeapon3D orbitalWeapon;
+    [Header("Health")]
     public int health;
+    public int maxHealth;
 
     [Header("Orbital Weapon Prefab")]
     public GameObject orbitalWeaponPrefab; // assign in inspector or via GameManager
@@ -83,12 +85,25 @@ public class PlayerController : MonoBehaviour
         }
 
         health = maxHealth;
+        this.maxHealth = maxHealth;
     }
 
-    public void TakeDamage(int amount)
+    // Method to set health (useful for adjusting health at runtime)
+    public void SetHealth(int newHealth)
+    {
+        health = Mathf.Clamp(newHealth, 0, maxHealth);
+    }
+
+    // Method to heal the player
+    public void Heal(int amount)
+    {
+        health = Mathf.Clamp(health + amount, 0, maxHealth);
+    }
+
+    public void TakeDamage(int amount, float forceMultiplier = 1f)
     {
         health -= amount;
-        Debug.Log($"{gameObject.name} took {amount} damage! Health: {health}");
+        Debug.Log($"{gameObject.name} took {amount} damage (force multiplier: {forceMultiplier:F2})! Health: {health}");
         if (health <= 0)
         {
             Debug.Log($"{gameObject.name} is dead!");

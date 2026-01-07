@@ -207,6 +207,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e6c4d27293d38e4e93209e24f481009, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement3D
-  moveSpeed: 6
+  moveSpeed: 10
   horizontalAxis: Horizontal
   verticalAxis: Vertical
+  useJoystickDirect: 0
+  joystickNumber: 1

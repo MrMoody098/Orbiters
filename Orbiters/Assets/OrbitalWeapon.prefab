@@ -321,8 +321,8 @@ MonoBehaviour:
   radius: 1.5
   minRadius: 0.75
   maxRadius: 3.5
-  linearSpeed: 6
-  radiusChangeSpeed: 2
+  linearSpeed: 15
+  radiusChangeSpeed: 2.5
   increaseRadius: 101
   decreaseRadius: 113
   flipDirection: 32
