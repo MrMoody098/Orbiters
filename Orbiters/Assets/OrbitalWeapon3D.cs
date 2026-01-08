@@ -63,9 +63,19 @@ public class OrbitalWeapon3D : MonoBehaviour
         {
             if (Input.GetKeyDown(flipDirection))
             {
-                direction *= -1;
-                lastDirectionChangeTime = Time.time; // Update the timestamp
+                FlipDirection();
             }
+        }
+    }
+
+    // Public method to flip direction (can be called externally, respects cooldown)
+    public void FlipDirection()
+    {
+        // Check if enough time has passed since last direction change
+        if (Time.time - lastDirectionChangeTime >= directionChangeCooldown)
+        {
+            direction *= -1;
+            lastDirectionChangeTime = Time.time; // Update the timestamp
         }
     }
 

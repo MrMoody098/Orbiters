@@ -26,6 +26,10 @@ public class GameManager : MonoBehaviour
     // Track last hit times to prevent spam
     private System.Collections.Generic.Dictionary<OrbitalWeapon3D, float> lastHitTimes = 
         new System.Collections.Generic.Dictionary<OrbitalWeapon3D, float>();
+    
+    // Track last orbital weapon collision time to prevent spam direction changes
+    private float lastOrbitalWeaponCollisionTime = 0f;
+    public float orbitalWeaponCollisionCooldown = 0.3f; // Cooldown between orbital weapon collisions
 
     void Start()
     {
@@ -121,6 +125,53 @@ public class GameManager : MonoBehaviour
             if (distance < collisionRadius)
             {
                 ApplyHit(player2.orbitalWeapon, player1);
+            }
+        }
+
+        // Check for orbital weapon vs orbital weapon collisions
+        if (player1.orbitalWeapon != null && player2.orbitalWeapon != null)
+        {
+            CheckOrbitalWeaponCollision(player1.orbitalWeapon, player2.orbitalWeapon);
+        }
+    }
+
+    void CheckOrbitalWeaponCollision(OrbitalWeapon3D weapon1, OrbitalWeapon3D weapon2)
+    {
+        // Check cooldown to prevent rapid direction changes
+        if (Time.time - lastOrbitalWeaponCollisionTime < orbitalWeaponCollisionCooldown)
+        {
+            return; // Still on cooldown
+        }
+        
+        // Check if orbital weapons are colliding
+        float distance = Vector3.Distance(weapon1.transform.position, weapon2.transform.position);
+        if (distance < collisionRadius)
+        {
+            // Update collision time
+            lastOrbitalWeaponCollisionTime = Time.time;
+            
+            // Compare radii
+            float radius1 = weapon1.radius;
+            float radius2 = weapon2.radius;
+            
+            // Tolerance for "same size" comparison (to account for floating point precision)
+            float radiusTolerance = 0.1f;
+            
+            if (Mathf.Abs(radius1 - radius2) < radiusTolerance)
+            {
+                // Same size - both change direction
+                weapon1.FlipDirection();
+                weapon2.FlipDirection();
+            }
+            else if (radius1 > radius2)
+            {
+                // Weapon1 has bigger orbit - it changes direction
+                weapon1.FlipDirection();
+            }
+            else
+            {
+                // Weapon2 has bigger orbit - it changes direction
+                weapon2.FlipDirection();
             }
         }
     }
