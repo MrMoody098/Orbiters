@@ -10,6 +10,9 @@ public class Wall : MonoBehaviour
     
     [Tooltip("Minimum velocity required to bounce")]
     public float minBounceVelocity = 0.1f;
+    
+    [Tooltip("Force multiplier for bounce effect")]
+    public float bounceForceMultiplier = 2f;
 
     void OnCollisionEnter(Collision collision)
     {
@@ -45,7 +48,7 @@ public class Wall : MonoBehaviour
                 
                 // Calculate bounce force - use Force instead of Impulse for continuous effect
                 // Multiply by mass so it scales properly
-                Vector3 bounceForce = reflectedDirection * speed * bounceFactor * rb.mass * 2f;
+                Vector3 bounceForce = reflectedDirection * speed * bounceFactor * rb.mass * bounceForceMultiplier;
                 
                 // Apply the bounce force - using Force mode so it persists across frames
                 rb.AddForce(bounceForce, ForceMode.Force);

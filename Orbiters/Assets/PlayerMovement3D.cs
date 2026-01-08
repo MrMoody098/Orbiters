@@ -11,6 +11,18 @@ public class PlayerMovement3D : MonoBehaviour
     public bool useJoystickDirect = false;
     [Tooltip("Joystick number (1 = first controller, 2 = second controller, etc.)")]
     public int joystickNumber = 1;
+    
+    [Header("Knockback Detection Settings")]
+    [Tooltip("Speed multiplier threshold to detect knockback (currentSpeed > moveSpeed * this value)")]
+    public float knockbackSpeedMultiplier = 1.2f;
+    [Tooltip("Minimum speed to check for bouncing")]
+    public float bounceDetectionMinSpeed = 0.5f;
+    [Tooltip("Minimum desired velocity magnitude to consider movement input")]
+    public float minDesiredVelocityMagnitude = 0.01f;
+    [Tooltip("Dot product threshold for bounce detection (negative = moving opposite to desired direction)")]
+    public float bounceDotProductThreshold = -0.3f;
+    [Tooltip("Force multiplier applied during knockback/bounce when player tries to move")]
+    public float knockbackMovementForceMultiplier = 2f;
 
     Rigidbody rb;
 
@@ -149,14 +161,14 @@ public class PlayerMovement3D : MonoBehaviour
         
         // Check if player is being knocked back (high velocity from impact)
         float currentSpeed = rb.linearVelocity.magnitude;
-        bool isKnockedBack = currentSpeed > moveSpeed * 1.2f;
+        bool isKnockedBack = currentSpeed > moveSpeed * knockbackSpeedMultiplier;
         
         // Check if player is moving away from desired direction (likely bouncing off wall)
         bool isBouncing = false;
-        if (currentSpeed > 0.5f && desiredVelocity.magnitude > 0.01f)
+        if (currentSpeed > bounceDetectionMinSpeed && desiredVelocity.magnitude > minDesiredVelocityMagnitude)
         {
             float dot = Vector3.Dot(rb.linearVelocity.normalized, desiredVelocity.normalized);
-            isBouncing = dot < -0.3f; // Moving opposite to desired direction
+            isBouncing = dot < bounceDotProductThreshold; // Moving opposite to desired direction
         }
         
         if (isKnockedBack || isBouncing)
@@ -164,10 +176,10 @@ public class PlayerMovement3D : MonoBehaviour
             // Being knocked back or bouncing - let physics handle it
             // Don't override velocity, just add slight movement influence
             // The drag will naturally slow down the knockback/bounce
-            if (desiredVelocity.magnitude > 0.01f)
+            if (desiredVelocity.magnitude > minDesiredVelocityMagnitude)
             {
                 // Add slight movement influence while sliding/bouncing
-                rb.AddForce(desiredVelocity * 2f, ForceMode.Force);
+                rb.AddForce(desiredVelocity * knockbackMovementForceMultiplier, ForceMode.Force);
             }
         }
         else

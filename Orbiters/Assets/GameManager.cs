@@ -15,21 +15,21 @@ public class GameManager : MonoBehaviour
     public int player1MaxHealth = 100;
     [Tooltip("Starting health for Player 2")]
     public int player2MaxHealth = 100;
+    [Tooltip("Starting lives for all players")]
+    public int startingLives = 3;
     
     [Header("Combat Settings")]
     public float baseDamage = 10f;
     public float baseForce = 6f; // Reduced for more controlled knockback
-    public float collisionRadius = 0.5f;
     public float hitCooldown = 0.5f; // Time between hits from same weapon
     public float velocityForceMultiplier = 0.4f; // How much weapon velocity contributes to knockback
     
-    // Track last hit times to prevent spam
-    private System.Collections.Generic.Dictionary<OrbitalWeapon3D, float> lastHitTimes = 
-        new System.Collections.Generic.Dictionary<OrbitalWeapon3D, float>();
-    
-    // Track last orbital weapon collision time to prevent spam direction changes
-    private float lastOrbitalWeaponCollisionTime = 0f;
     public float orbitalWeaponCollisionCooldown = 0.3f; // Cooldown between orbital weapon collisions
+
+    [Header("Physics Settings")]
+    public float playerMass = 1f;
+    public float playerLinearDamping = 6f;
+    public float playerColliderRadius = 0.5f;
 
     void Start()
     {
@@ -48,16 +48,16 @@ public class GameManager : MonoBehaviour
         // Player 1
         GameObject p1 = Instantiate(playerPrefab, player1Spawn.position, Quaternion.identity);
         p1.name = "Player1";
-        SetupPlayer(p1, "Horizontal", "Vertical", KeyCode.Q, KeyCode.E, KeyCode.Space, false, 1, player1MaxHealth);
+        SetupPlayer(p1, "Horizontal", "Vertical", KeyCode.Q, KeyCode.E, KeyCode.Space, false, 1, player1MaxHealth, player1Spawn);
 
         // Player 2 - Controller/Joystick (uses custom axes)
         GameObject p2 = Instantiate(playerPrefab, player2Spawn.position, Quaternion.identity);
         p2.name = "Player2";
-        SetupPlayer(p2, "JoystickHorizontal", "JoystickVertical", KeyCode.Joystick1Button4, KeyCode.Joystick1Button5, KeyCode.Joystick1Button0, true, 1, player2MaxHealth);
+        SetupPlayer(p2, "JoystickHorizontal", "JoystickVertical", KeyCode.Joystick1Button4, KeyCode.Joystick1Button5, KeyCode.Joystick1Button0, true, 1, player2MaxHealth, player2Spawn);
     }
 
     void SetupPlayer(GameObject playerObj, string horizontal, string vertical, 
-        KeyCode decRadius, KeyCode incRadius, KeyCode flipDir, bool useJoystick, int joystickNumber, int maxHealth)
+        KeyCode decRadius, KeyCode incRadius, KeyCode flipDir, bool useJoystick, int joystickNumber, int maxHealth, Transform spawnPoint)
     {
         // Ensure PlayerMovement3D component exists
         PlayerMovement3D movement = playerObj.GetComponent<PlayerMovement3D>();
@@ -75,8 +75,8 @@ public class GameManager : MonoBehaviour
             rb.useGravity = false; // 2D-like physics
         }
         // Optimize Rigidbody for ice-like knockback (starts fast, slows down gradually)
-        rb.mass = 1f;
-        rb.linearDamping = 6f; // Higher drag creates ice-like sliding effect - starts fast, slows down smoothly
+        rb.mass = playerMass;
+        rb.linearDamping = playerLinearDamping; // Higher drag creates ice-like sliding effect - starts fast, slows down smoothly
         
         // Ensure player has a collider for wall bouncing
         Collider col = playerObj.GetComponent<Collider>();
@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
         {
             // Add a sphere collider if none exists
             SphereCollider sphereCol = playerObj.AddComponent<SphereCollider>();
-            sphereCol.radius = 0.5f;
+            sphereCol.radius = playerColliderRadius;
         }
         else if (!col.enabled)
         {
@@ -98,97 +98,14 @@ public class GameManager : MonoBehaviour
             pc = playerObj.AddComponent<PlayerController>();
         }
         pc.orbitalWeaponPrefab = orbitalWeaponPrefab;
-        pc.Initialize(horizontal, vertical, decRadius, incRadius, flipDir, maxHealth, useJoystick, joystickNumber);
+        pc.Initialize(horizontal, vertical, decRadius, incRadius, flipDir, maxHealth, useJoystick, joystickNumber, startingLives, spawnPoint);
     }
 
-    void Update()
+    // Made public so OrbitalWeapon3D can call it
+    // Collision detection is now handled by OrbitalWeapon3D using Unity's physics system
+    public void ApplyHit(OrbitalWeapon3D weapon, PlayerController target)
     {
-        // Damage check: simple distance collision with force application
-        PlayerController[] players = FindObjectsOfType<PlayerController>();
-        if (players.Length < 2) return;
-
-        PlayerController player1 = players[0];
-        PlayerController player2 = players[1];
-
-        // Check if orbital weapons exist before checking collisions
-        if (player1.orbitalWeapon != null && player2 != null && player2.transform != null)
-        {
-            float distance = Vector3.Distance(player1.orbitalWeapon.transform.position, player2.transform.position);
-            if (distance < collisionRadius)
-            {
-                ApplyHit(player1.orbitalWeapon, player2);
-            }
-        }
-        if (player2.orbitalWeapon != null && player1 != null && player1.transform != null)
-        {
-            float distance = Vector3.Distance(player2.orbitalWeapon.transform.position, player1.transform.position);
-            if (distance < collisionRadius)
-            {
-                ApplyHit(player2.orbitalWeapon, player1);
-            }
-        }
-
-        // Check for orbital weapon vs orbital weapon collisions
-        if (player1.orbitalWeapon != null && player2.orbitalWeapon != null)
-        {
-            CheckOrbitalWeaponCollision(player1.orbitalWeapon, player2.orbitalWeapon);
-        }
-    }
-
-    void CheckOrbitalWeaponCollision(OrbitalWeapon3D weapon1, OrbitalWeapon3D weapon2)
-    {
-        // Check cooldown to prevent rapid direction changes
-        if (Time.time - lastOrbitalWeaponCollisionTime < orbitalWeaponCollisionCooldown)
-        {
-            return; // Still on cooldown
-        }
-        
-        // Check if orbital weapons are colliding
-        float distance = Vector3.Distance(weapon1.transform.position, weapon2.transform.position);
-        if (distance < collisionRadius)
-        {
-            // Update collision time
-            lastOrbitalWeaponCollisionTime = Time.time;
-            
-            // Compare radii
-            float radius1 = weapon1.radius;
-            float radius2 = weapon2.radius;
-            
-            // Tolerance for "same size" comparison (to account for floating point precision)
-            float radiusTolerance = 0.1f;
-            
-            if (Mathf.Abs(radius1 - radius2) < radiusTolerance)
-            {
-                // Same size - both change direction
-                weapon1.FlipDirection();
-                weapon2.FlipDirection();
-            }
-            else if (radius1 > radius2)
-            {
-                // Weapon1 has bigger orbit - it changes direction
-                weapon1.FlipDirection();
-            }
-            else
-            {
-                // Weapon2 has bigger orbit - it changes direction
-                weapon2.FlipDirection();
-            }
-        }
-    }
-
-    void ApplyHit(OrbitalWeapon3D weapon, PlayerController target)
-    {
-        // Check cooldown to prevent spam hits
-        if (lastHitTimes.ContainsKey(weapon))
-        {
-            if (Time.time - lastHitTimes[weapon] < hitCooldown)
-            {
-                return; // Still on cooldown
-            }
-        }
-        
-        // Update last hit time
-        lastHitTimes[weapon] = Time.time;
+        // Cooldown is now handled by OrbitalWeapon3D before calling this method
         
         // Calculate force multiplier based on orbital speed/radius
         // Smaller radius = higher angular speed = more force

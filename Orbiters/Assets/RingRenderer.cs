@@ -16,9 +16,9 @@ public class RingRenderer : MonoBehaviour
 
     [Header("Ring Settings")]
     [SerializeField] private int segments = 64;
-    [SerializeField] private float baseLineWidth = 0.05f;
-    [SerializeField] private float pulseAmount = 0.01f;
-    [SerializeField] private float pulseSpeed = 5f;
+    [SerializeField] private float baseLineWidth = 0.03f;
+    [SerializeField] private float pulseAmount = 0.02f;
+    [SerializeField] private float pulseSpeed = 6f;
     [SerializeField] private Color minRadiusColor = Color.red;
     [SerializeField] private Color maxRadiusColor = Color.green;
 

@@ -326,3 +326,16 @@ MonoBehaviour:
   increaseRadius: 101
   decreaseRadius: 113
   flipDirection: 32
+  directionChangeCooldown: 0.5
+  weaponColliderRadius: 0.5
+  weaponRadiusTolerance: 0.1
+  wallCollisionCooldown: 0.2
+  minForceMultiplier: 1
+  maxForceMultiplier: 2.5
+  hitSoundClip: {fileID: 8300000, guid: 7a635aec8bcc1aa4d8cf37a56d95738a, type: 3}
+  baseHitVolume: 0.7
+  minHitPitch: 0.8
+  maxHitPitch: 1.5
+  minPitchForceMultiplier: 1
+  maxPitchForceMultiplier: 2.5
+  ownerPlayer: {fileID: 0}
